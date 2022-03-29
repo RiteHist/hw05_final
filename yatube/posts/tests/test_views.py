@@ -248,11 +248,16 @@ class PostsViewTests(TestCase):
 
     def test_logged_user_can_unfollow(self):
         """ Проверка, что пользователь может отписаться от автора. """
+        follow_pair = Follow.objects.create(
+            author=PostsViewTests.second_user,
+            user=PostsViewTests.user
+        )
         username_param = {'username': PostsViewTests.second_user.username}
         response = self.client.get(reverse('posts:profile_unfollow',
                                            kwargs=username_param))
 
-        self.assertEqual(response.status_code, 404)
+        self.assertRedirects(response,
+                             reverse('posts:profile', kwargs=username_param))
 
         follow_pair = Follow.objects.filter(
             author=PostsViewTests.second_user,
