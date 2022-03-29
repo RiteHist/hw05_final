@@ -135,6 +135,8 @@ def profile_follow(request, username):
     """ Подписка на автора. """
     follower = get_object_or_404(User, username=request.user.username)
     author = get_object_or_404(User, username=username)
+    if follower == author:
+        return redirect('posts:profile', username)
     follow_exists = follower.follower.filter(author__exact=author).exists()
     if follow_exists:
         return redirect('posts:profile', username)
@@ -148,5 +150,8 @@ def profile_unfollow(request, username):
     """ Отписка от автора. """
     follower = get_object_or_404(User, username=request.user.username)
     author = get_object_or_404(User, username=username)
-    Follow.objects.filter(author=author, user=follower).delete()
+    follow_link = get_object_or_404(Follow,
+                                    author=author,
+                                    user=follower)
+    follow_link.delete()
     return redirect('posts:profile', username)
