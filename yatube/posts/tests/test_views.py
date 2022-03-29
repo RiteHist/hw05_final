@@ -252,8 +252,7 @@ class PostsViewTests(TestCase):
         response = self.client.get(reverse('posts:profile_unfollow',
                                            kwargs=username_param))
 
-        self.assertRedirects(response,
-                             reverse('posts:profile', kwargs=username_param))
+        self.assertEqual(response.status_code, 404)
 
         follow_pair = Follow.objects.filter(
             author=PostsViewTests.second_user,
