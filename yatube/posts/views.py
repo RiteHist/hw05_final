@@ -36,11 +36,9 @@ def profile(request, username):
     """ Профиль пользователя. """
     user = get_object_or_404(User, username=username)
     """ Проверка, что пользователь подписан на автора"""
-    following = False
-    if request.user.is_authenticated:
-        current_user = get_object_or_404(User, username=request.user.username)
-        following = current_user.follower.filter(author__exact=user).exists()
-
+    following = (request.user.is_authenticated
+                 and request.user.follower.filter(author__exact=user)
+                 )
     posts = user.posts.all()
     page_obj = objects_to_paginator(request, posts)
 
@@ -120,9 +118,10 @@ def add_comment(request, post_id):
 @login_required
 def follow_index(request):
     """ Все посты авторов, на которых подписан пользователь. """
-    follower = get_object_or_404(User, username=request.user.username)
+    follower = request.user
     follows = follower.follower.all().values('author')
-    posts = Post.objects.filter(author__in=follows)
+    posts = (Post.objects.filter(author__in=follows).
+             select_related('author', 'group'))
     page_obj = objects_to_paginator(request, posts)
     context = {
         'page_obj': page_obj
@@ -133,12 +132,10 @@ def follow_index(request):
 @login_required
 def profile_follow(request, username):
     """ Подписка на автора. """
-    follower = get_object_or_404(User, username=request.user.username)
+    follower = request.user
     author = get_object_or_404(User, username=username)
-    if follower == author:
-        return redirect('posts:profile', username)
-    follow_exists = follower.follower.filter(author__exact=author).exists()
-    if follow_exists:
+    follow_exists = follower.follower.filter(author__exact=author)
+    if follower == author or follow_exists:
         return redirect('posts:profile', username)
     new_following = Follow(user=follower, author=author)
     new_following.save()
@@ -148,10 +145,7 @@ def profile_follow(request, username):
 @login_required
 def profile_unfollow(request, username):
     """ Отписка от автора. """
-    follower = get_object_or_404(User, username=request.user.username)
+    follower = request.user
     author = get_object_or_404(User, username=username)
-    follow_link = get_object_or_404(Follow,
-                                    author=author,
-                                    user=follower)
-    follow_link.delete()
+    Follow.objects.filter(author=author, user=follower).delete()
     return redirect('posts:profile', username)

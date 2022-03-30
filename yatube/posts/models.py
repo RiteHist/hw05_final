@@ -32,9 +32,9 @@ class Post(models.Model):
         help_text='Группа, к которой будет относиться пост'
     )
     image = models.ImageField(
-        'Картинка',
         upload_to='posts/',
-        blank=True
+        blank=True,
+        verbose_name='Картинка'
     )
 
     class Meta():
@@ -75,3 +75,9 @@ class Follow(models.Model):
         related_name='following',
         on_delete=models.CASCADE
     )
+
+    class Meta():
+        models.UniqueConstraint(
+            fields=['user', 'author'],
+            name='unique_follow_pair'
+        )

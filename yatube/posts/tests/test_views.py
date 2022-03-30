@@ -280,6 +280,16 @@ class PostsViewTests(TestCase):
         response = self.client.get(reverse('posts:follow_index'))
         post_in_follow = response.context.get('page_obj').object_list[0]
         self.assertEqual(new_post, post_in_follow)
+
+    def test_post_is_invisible_to_non_following_user(self):
+        """
+        Проверка, что новый пост не виден
+        неподписанным на автора пользователям.
+        """
+        Post.objects.create(
+            author=PostsViewTests.second_user,
+            text='Тест подписки'
+        )
         third_user = User.objects.create_user(username='thetestiestboy')
         new_client = Client()
         new_client.force_login(third_user)

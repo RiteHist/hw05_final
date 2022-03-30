@@ -75,9 +75,23 @@ class PostsFormTests(TestCase):
 
     def test_can_edit_existing_post(self):
         """ Проверка, что post_edit редактирует существующий пост"""
+        small_gif = (
+            b'\x47\x49\x46\x38\x39\x61\x02\x00'
+            b'\x01\x00\x80\x00\x00\x00\x00\x00'
+            b'\xFF\xFF\xFF\x21\xF9\x04\x00\x00'
+            b'\x00\x00\x00\x2C\x00\x00\x00\x00'
+            b'\x02\x00\x01\x00\x00\x02\x02\x0C'
+            b'\x0A\x00\x3B'
+        )
+        image = SimpleUploadedFile(
+            name='test2.gif',
+            content=small_gif,
+            content_type='image/gif'
+        )
         form = {
             'text': 'Тест изменения поста',
-            'group': PostsFormTests.group.id
+            'group': PostsFormTests.group.id,
+            'image': image
         }
         post_id = PostsFormTests.post.id
         response = (self.client.post(reverse('posts:post_edit',
@@ -93,7 +107,8 @@ class PostsFormTests(TestCase):
                 pk=1,
                 text='Тест изменения поста',
                 group=PostsFormTests.group,
-                author=PostsFormTests.user
+                author=PostsFormTests.user,
+                image='posts/test2.gif'
             ).exists()
         )
 
