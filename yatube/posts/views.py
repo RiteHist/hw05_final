@@ -119,8 +119,7 @@ def add_comment(request, post_id):
 def follow_index(request):
     """ Все посты авторов, на которых подписан пользователь. """
     follower = request.user
-    follows = follower.follower.all().values('author')
-    posts = (Post.objects.filter(author__in=follows).
+    posts = (Post.objects.filter(author__following__user=follower).
              select_related('author', 'group'))
     page_obj = objects_to_paginator(request, posts)
     context = {
